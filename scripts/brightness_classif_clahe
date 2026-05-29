@@ -1,0 +1,28 @@
+import cv2
+import numpy as np
+
+image = cv2.imread('./images/dark002.jpg')
+
+def classify_image_brightness(image):
+    lab_image = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
+    l_channel, a_channel, b_channel = cv2.split(lab_image)
+    hist = cv2.calcHist([l_channel], [0], None, [256], [0, 256])
+    hist /= hist.sum()
+    dark_threshold = 0.6
+    bright_threshold = 0.6
+    dark_sum = hist[:70].sum()
+    bright_sum = hist[180:].sum()
+    if dark_sum > dark_threshold:
+        return 'тёмное'
+    elif bright_sum > bright_threshold:
+        return 'светлое'
+    else:
+        return 'нормальное' 
+print(classify_image_brightness(image))    
+lab_image = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
+l_channel, a_channel, b_channel = cv2.split(lab_image)
+clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+l_channel_clahe = clahe.apply(l_channel)
+lab_clahe_image = cv2.merge((l_channel_clahe, a_channel, b_channel))
+result_image = cv2.cvtColor(lab_clahe_image, cv2.COLOR_LAB2BGR)
+cv2.imwrite('./images/normal_output.jpg', result_image)
